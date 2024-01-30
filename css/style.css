@@ -92,7 +92,7 @@ header {
 }
 
 /* notas */
-#notes-conatiner {
+#notes-container {
     display: grid;
     grid-template-columns: repeat(auto-fill, 250px);
     padding: 2rem;
