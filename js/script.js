@@ -1,10 +1,14 @@
-// elementos 
+// ELEMENTS 
 const notesContainer = document.querySelector("#notes-container");
 const notesInput = document.querySelector("#note-content");
 const addNotesBtn = document.querySelector(".add-note");
 
-// funções
+// FUNCTIONS
+
+// showNotes : mostra as notas feitas pelo usuário de modo que elas sejam únicas, ou seja, uma nota não substitua a outra 
 function showNotes() {
+    cleanNotes();
+
     getNotes().forEach((note) => {
         const noteElement = createNote(note.id, note.content, note.fixed);
 
@@ -12,7 +16,11 @@ function showNotes() {
     });
 }
 
+function cleanNotes() {
+    notesContainer.replaceChildren([])
+}
 
+// addNote : adiciona uma nota nova de acordo com os dados fornecidos pelo usuário, usando a função showNotes para cria-las individualmente e ao fim limpando o input 
 function addNote() {
     const notes = getNotes();
 
@@ -32,10 +40,13 @@ function addNote() {
     notesInput.value = "";
 }
 
+// função para gerar um Id aleatório para as tarefas, os Id´s podem ir de 1 a 5000 
 function genereteId() {
     return Math.floor(Math.random() * 5000);
 }
 
+// criando o elemento mostrado na tela para o usuário, a função pega os dados digitados e cria os elementos necessários para mostrar as notas na tela do navegador.
+// função de fixar as notas
 function createNote(id, content, fixed) {
     const element = document.createElement("div");
     element.classList.add("note");
@@ -46,22 +57,94 @@ function createNote(id, content, fixed) {
     textarea.placeholder = "Adicione algum texto...";
     element.appendChild(textarea);
 
+
+    const pinICon = document.createElement("i");
+    pinICon.classList.add(...["bi", "bi-pin"]);
+    element.appendChild(pinICon);
+
+    const deleteIcon = document.createElement("i");
+    deleteIcon.classList.add(...["bi", "bi-x-lg"]);
+    element.appendChild(deleteIcon);
+
+    const duplicateIcon = document.createElement("i");
+    duplicateIcon.classList.add(...["bi", "bi-file-earmark-plus"]);
+    element.appendChild(duplicateIcon);
+
+    if(fixed) {
+        element.classList.add("fixed");
+    }
+
+    // eventos do elemento
+    element.querySelector(".bi-pin").addEventListener("click", () => {
+        toggleFixedNote(id);
+    });
+
+    element.querySelector(".bi-x-lg").addEventListener("click", () => {
+        deleteNote(id, element);
+    });
+
+    element.querySelector(".bi-file-earmark-plus").addEventListener("click", () => {
+        copyNote(id);
+    });
+
     return element;
 }
 
-// local storage
+// botao de fixar a nota 
+function toggleFixedNote(id) {
+    const notes = getNotes();
+    const targetNotes = notes.filter((note) => note.id === id)[0];
+
+    targetNotes.fixed = !targetNotes.fixed;
+
+    saveNotes(notes);
+    showNotes();
+}
+
+function deleteNote(id, element) {
+    const notes = getNotes().filter((note) => note.id !== id);
+    saveNotes(notes);
+
+    notesContainer.removeChild(element);
+}
+
+function copyNote(id) {
+    const notes = getNotes();
+    const targetNote = notes.filter((note) => note.id === id)[0];
+
+    const noteObject = {
+        id: genereteId(),
+        content: targetNote.content,
+        fixed: false
+    };
+
+    const noteElement = createNote(noteObject.id, noteObject.content, noteObject.fixed);
+
+    notesContainer.appendChild(noteElement);
+
+    notes.push(noteObject);
+    saveNotes(notes);
+}
+
+
+// LOCAL STORAGE
+// função para guardar as notas criadas no local storage
 function getNotes() {
     const notes = JSON.parse(localStorage.getItem("notes") || "[]");
 
-    return notes;
+    const orderedNotes = notes.sort((a, b) => a.fixed > b.fixed ? -1 : 1)
+
+    return orderedNotes;
 }
 
+// salvando as notas no local storage, assim mesmo que o usário renderize a tela do nevegador, as tarefas salvas ainda estaram lá
 function saveNotes(notes) {
     localStorage.setItem("notes", JSON.stringify(notes))
 }
 
-// eventos 
+// EVENTS 
+// evento de click que ativa a função addNote 
 addNotesBtn.addEventListener("click", () => addNote())
 
-// inicialização 
+// INITIALIZATION
 showNotes();
