@@ -4,7 +4,18 @@ const notesInput = document.querySelector("#note-content");
 const addNotesBtn = document.querySelector(".add-note");
 
 // funções
+function showNotes() {
+    getNotes().forEach((note) => {
+        const noteElement = createNote(note.id, note.content, note.fixed);
+
+        notesContainer.appendChild(noteElement);
+    });
+}
+
+
 function addNote() {
+    const notes = getNotes();
+
     const noteObject = {
         id: genereteId(),
         content: notesInput.value,
@@ -14,6 +25,11 @@ function addNote() {
     const noteElement = createNote(noteObject.id, noteObject.content);
 
     notesContainer.appendChild(noteElement);
+
+    notes.push(noteObject);
+    saveNotes(notes);
+
+    notesInput.value = "";
 }
 
 function genereteId() {
@@ -33,5 +49,19 @@ function createNote(id, content, fixed) {
     return element;
 }
 
+// local storage
+function getNotes() {
+    const notes = JSON.parse(localStorage.getItem("notes") || "[]");
+
+    return notes;
+}
+
+function saveNotes(notes) {
+    localStorage.setItem("notes", JSON.stringify(notes))
+}
+
 // eventos 
 addNotesBtn.addEventListener("click", () => addNote())
+
+// inicialização 
+showNotes();
