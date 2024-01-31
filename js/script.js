@@ -178,7 +178,19 @@ function searchNotes(search) {
 }
 
 function exportData() {
-    const note = getNotes();
+    const notes = getNotes();
+
+    const csvString = [
+        ["ID", "Conteúdo", "Fixado?"],
+        ...notes.map((note) => [note.id, note.content, note.fixed]),
+    ].map((e) => e.join(",")).join("\n");
+
+    const element = document.createElement("a");
+    element.href = "data:text/csv;charset=utf-8," + encodeURI(csvString);
+    element.target = "_blank";
+    element.download = "notes.csv";
+
+    element.click();
 }
 
 // EVENTS 
