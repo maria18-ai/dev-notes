@@ -2,6 +2,8 @@
 const notesContainer = document.querySelector("#notes-container");
 const notesInput = document.querySelector("#note-content");
 const addNotesBtn = document.querySelector(".add-note");
+const searchInput = document.querySelector("#search-input");
+const exportBtn = document.querySelector("#export-notes");
 
 // FUNCTIONS
 
@@ -75,6 +77,12 @@ function createNote(id, content, fixed) {
     }
 
     // eventos do elemento
+    element.querySelector("textarea").addEventListener("keyup", (e) => {
+        const noteContent = e.target.value;
+
+        updateNote(id, noteContent);
+    });
+
     element.querySelector(".bi-pin").addEventListener("click", () => {
         toggleFixedNote(id);
     });
@@ -126,6 +134,15 @@ function copyNote(id) {
     saveNotes(notes);
 }
 
+function updateNote(id, content) {
+    const notes = getNotes();
+    const targetNote = notes.filter((note) => note.id === id)[0];
+
+    targetNote.content = content;
+
+    saveNotes(notes)
+}
+
 
 // LOCAL STORAGE
 // função para guardar as notas criadas no local storage
@@ -142,9 +159,47 @@ function saveNotes(notes) {
     localStorage.setItem("notes", JSON.stringify(notes))
 }
 
+function searchNotes(search) {
+    const searchResults = getNotes().filter((note) => note.content.includes(search));
+
+    if(search !== "") {
+        cleanNotes();
+
+        searchResults.forEach((note) => {
+            const noteElement = createNote(note.id, note.content);
+            notesContainer.appendChild(noteElement);
+        });
+
+        return
+    }
+
+    cleanNotes();
+    showNotes();
+}
+
+function exportData() {
+    const note = getNotes();
+}
+
 // EVENTS 
 // evento de click que ativa a função addNote 
-addNotesBtn.addEventListener("click", () => addNote())
+addNotesBtn.addEventListener("click", () => addNote());
+
+searchInput.addEventListener("keyup", (e) => {
+    const search = e.target.value;
+
+    searchNotes(search);
+});
+
+notesInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+        addNote();
+    }
+});
+
+exportBtn.addEventListener("click", () => {
+    exportData();
+});
 
 // INITIALIZATION
 showNotes();
